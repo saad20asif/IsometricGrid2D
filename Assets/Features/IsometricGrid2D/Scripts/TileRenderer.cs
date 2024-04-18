@@ -1,6 +1,4 @@
 using UnityEngine;
-using System.IO;
-using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
 using Newtonsoft.Json;
@@ -10,117 +8,75 @@ public class Tile
 {
     public int TileType { get; set; }
 }
-
 [System.Serializable]
 public class TerrainData
 {
     public List<List<Tile>> TerrainGrid { get; set; }
 }
-
 public class TileRenderer : MonoBehaviour
 {
-    public GameObject[] tilePrefabs; // Array of prefabs for each tile type
-    public string jsonFilePath;
+    [SerializeField] private JsonReaderSo JsonReaderSo;
+    public GameObject dirtPrefab; // Array of prefabs for each tile type
+    public GameObject grassPrefab; // Array of prefabs for each tile type
+    public GameObject stonePrefab; // Array of prefabs for each tile type
+    public GameObject woodPrefab; // Array of prefabs for each tile type
 
     private List<List<Tile>> terrainGrid;
-
-    void Start()
-    {
-        LoadJSON();
-    }
+    public float xOffset = 1.0f;
+    public float yOffset = 1.0f;
+    
 
     [Button("LOAD FROM JSON")]
-    void LoadJSON()
+    private void LoadIt()
     {
-        try
-        {
-            string jsonText = File.ReadAllText(jsonFilePath);
-            Debug.Log(jsonText);
-            //TerrainData terrainData1 = JsonConvert.
-            // terrainData = JsonUtility.FromJson<TerrainData>(jsonText);
-            TerrainData terrainData = JsonConvert.DeserializeObject<TerrainData>(jsonText);
-
-            if (terrainData != null && terrainData.TerrainGrid != null)
-            {
-                terrainGrid = terrainData.TerrainGrid;
-                PrintTerrainData(terrainData);
-                //RenderTiles();
-            }
-            else
-            {
-                Debug.LogError("TerrainData or TerrainGrid is null.");
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError("Error loading JSON: " + e.Message);
-        }
+        JsonReaderSo.LoadDataFromFile();
+        RenderTiles();
     }
 
-    void PrintTerrainData(TerrainData terrainData)
+    private void RenderTiles()
     {
-        List<List<Tile>> grid = terrainData.TerrainGrid;
-        int rows = grid.Count;
-
-        Debug.Log("TerrainGrid:");
-
-        foreach (var row in grid)
+        if (JsonReaderSo.TerrainData != null)
         {
-            string rowStr = "";
-            foreach (var tile in row)
+            for (int i = 0; i < JsonReaderSo.TerrainData.TerrainGrid.Count; i++)
             {
-                rowStr += tile.TileType + " ";
-            }
-            Debug.Log(rowStr);
-        }
-    }
+                List<Tile> row = JsonReaderSo.TerrainData.TerrainGrid[i];
+                int cols = row.Count;
 
-    void RenderTiles()
-    {
-        if (tilePrefabs == null || tilePrefabs.Length == 0)
-        {
-            Debug.LogError("Tile prefabs are not assigned.");
-            return;
-        }
-
-        if (terrainGrid == null)
-        {
-            Debug.LogError("Terrain grid is null.");
-            return;
-        }
-
-        for (int y = 0; y < terrainGrid.Count; y++)
-        {
-            List<Tile> row = terrainGrid[y];
-            for (int x = 0; x < row.Count; x++)
-            {
-                int tileType = row[x].TileType;
-                if (tileType >= 0 && tileType < tilePrefabs.Length)
+                for (int j = 0; j < cols; j++)
                 {
-                    GameObject prefab = tilePrefabs[tileType];
+                    Tile tile = row[j];
+                    Vector3 position =
+                        new Vector3(j * xOffset, -i * yOffset, 0); // Adjusted position based on grid coordinates
+
+                    GameObject prefab = null;
+                    switch (tile.TileType)
+                    {
+                        case 0:
+                            prefab = dirtPrefab;
+                            break;
+                        case 1:
+                            prefab = grassPrefab;
+                            break;
+                        case 2:
+                            prefab = stonePrefab;
+                            break;
+                        case 3:
+                            prefab = woodPrefab;
+                            break;
+                        default:
+                            Debug.LogWarning("Unknown tile type: " + tile.TileType);
+                            break;
+                    }
+
                     if (prefab != null)
                     {
-                        Vector3 tilePosition = IsometricToCartesian(new Vector2(x, y));
-                        GameObject tile = Instantiate(prefab, tilePosition, Quaternion.identity);
-                        tile.transform.SetParent(transform);
+                        GameObject tilee = Instantiate(prefab, position, Quaternion.identity,transform);
+                        tilee.name = "["+i+" "+j+"]";
                     }
-                    else
-                    {
-                        Debug.LogError("Prefab for tile type " + tileType + " is not assigned.");
-                    }
-                }
-                else
-                {
-                    Debug.LogError("Invalid tile type: " + tileType);
                 }
             }
         }
     }
 
-    Vector3 IsometricToCartesian(Vector2 isometricCoord)
-    {
-        float x = isometricCoord.x - isometricCoord.y;
-        float y = (isometricCoord.x + isometricCoord.y) / 2f;
-        return new Vector3(x, y, 0);
-    }
+
 }
