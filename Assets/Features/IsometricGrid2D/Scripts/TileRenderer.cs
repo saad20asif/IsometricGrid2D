@@ -29,8 +29,19 @@ public class TileRenderer : MonoBehaviour
     [Button("LOAD FROM JSON")]
     private void LoadIt()
     {
+        //DestroyTiles();
         JsonReaderSo.LoadDataFromFile();
         RenderTiles();
+    }
+
+    [Button("DELETE DATA")]
+    private void DestroyTiles()
+    {
+        int childCount = transform.childCount;
+        for (int i = 0; i < childCount; i++)
+        {
+            DestroyImmediate(transform.GetChild(0).gameObject);
+        }
     }
 
     private void RenderTiles()
@@ -46,7 +57,7 @@ public class TileRenderer : MonoBehaviour
                 {
                     Tile tile = row[j];
                     Vector3 position =
-                        new Vector3(j * xOffset, -i * yOffset, 0); // Adjusted position based on grid coordinates
+                        new Vector3(j * xOffset, i * yOffset, 0); // Adjusted position based on grid coordinates
 
                     GameObject prefab = null;
                     switch (tile.TileType)
@@ -71,7 +82,7 @@ public class TileRenderer : MonoBehaviour
                     if (prefab != null)
                     {
                         GameObject tilee = Instantiate(prefab, position, Quaternion.identity,transform);
-                        tilee.name = "["+i+" "+j+"]";
+                        tilee.name = "["+j+" "+i+"]";
                     }
                 }
             }
