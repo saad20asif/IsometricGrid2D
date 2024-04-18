@@ -3,6 +3,7 @@ using System.IO;
 using System;
 using System.Collections.Generic;
 using Sirenix.OdinInspector;
+using Newtonsoft.Json;
 
 [System.Serializable]
 public class Tile
@@ -35,7 +36,9 @@ public class TileRenderer : MonoBehaviour
         {
             string jsonText = File.ReadAllText(jsonFilePath);
             Debug.Log(jsonText);
-            TerrainData terrainData = JsonUtility.FromJson<TerrainData>(jsonText);
+            //TerrainData terrainData1 = JsonConvert.
+            // terrainData = JsonUtility.FromJson<TerrainData>(jsonText);
+            TerrainData terrainData = JsonConvert.DeserializeObject<TerrainData>(jsonText);
 
             if (terrainData != null && terrainData.TerrainGrid != null)
             {
