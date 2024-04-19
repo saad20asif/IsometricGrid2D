@@ -29,12 +29,12 @@ public class TileRenderer : MonoBehaviour
     [Button("LOAD FROM JSON")]
     private void LoadIt()
     {
-        //DestroyTiles();
+        DestroyTiles();
         JsonReaderSo.LoadDataFromFile();
         RenderTiles();
     }
 
-    [Button("DELETE DATA")]
+    [Button("DESTROY TILES")]
     private void DestroyTiles()
     {
         int childCount = transform.childCount;
