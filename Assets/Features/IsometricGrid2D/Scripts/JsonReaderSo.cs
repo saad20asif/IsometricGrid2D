@@ -5,6 +5,7 @@ using UnityEngine;
 public class JsonReaderSo : JsonReaderBase<TerrainData>
 {
     public TerrainData TerrainData;
+    public List<List<Transform>> Grid;
     [SerializeField] private string FileName;
     public void LoadDataFromFile()
     {
@@ -28,7 +29,7 @@ public class JsonReaderSo : JsonReaderBase<TerrainData>
                 rowStr += tile.TileType + " ";
             }
 
-            Debug.Log(rowStr);
+            //Debug.Log(rowStr);
         }
     }
 }
