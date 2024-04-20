@@ -81,7 +81,9 @@ public class TileRenderer : MonoBehaviour
 
                     if (prefab != null)
                     {
-                        GameObject tilee = Instantiate(prefab, position, Quaternion.identity,transform);
+                        GameObject tilee = Instantiate(prefab, transform);
+                        tilee.transform.localPosition = position;
+                        tilee.transform.localRotation = Quaternion.identity;
                         tilee.name = "["+j+" "+i+"]";
                     }
                 }
