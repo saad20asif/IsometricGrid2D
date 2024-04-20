@@ -95,42 +95,64 @@ public class PlacementManager : MonoBehaviour
     {
         if(Input.GetMouseButtonDown(0))
         {
-            if(_hoveredSprite!=null)
+            if(!CheckIfThisTileAvailable(_hoveredSprite.GetComponent<TileInfo>().MyIndex))
             {
-                if(_hoveredSprite.GetComponent<TileInfo>()!=null)
+                print("This tile is not available!");
+            }
+            else
+            {
+                int x = _hoveredSprite.GetComponent<TileInfo>().MyIndex.x;
+                int y = _hoveredSprite.GetComponent<TileInfo>().MyIndex.y + 1;
+                Vector2Int nextTileIndex = new Vector2Int(x, y);
+                print("nextTileIndex : " + nextTileIndex);
+                if (IsThisTileEmpty(nextTileIndex)) // If next tile is available
                 {
-                    if (_hoveredSprite.GetComponent<TileInfo>().TileType == placementIndex)  // if thats a wood tile
+                    print("Next Tile is also avaialable : " + _hoveredSprite.GetComponent<TileInfo>().MyIndex);
+                    _hoveredSprite.GetComponent<TileInfo>().Filled = true;
+                    SpawnTable(_hoveredSprite.GetComponent<TileInfo>().MyIndex);
+                }
+                else
+                {
+                    // if next tile is not available we can also check previous tile
+                    x = _hoveredSprite.GetComponent<TileInfo>().MyIndex.x;
+                    y = _hoveredSprite.GetComponent<TileInfo>().MyIndex.y - 1;
+                    Vector2Int previosTileIndex = new Vector2Int(x, y);
+                    if (IsThisTileEmpty(previosTileIndex))
                     {
-                        if(!_hoveredSprite.GetComponent<TileInfo>().Filled) // if its not already filled
-                        {
-                            if(IsNeighborEmpty(_hoveredSprite.GetComponent<TileInfo>().MyIndex)) // If in the table direction neighbor is also empty
-                            {
-                                _hoveredSprite.GetComponent<TileInfo>().Filled = true;
-                                SpawnTable(_hoveredSprite.GetComponent<TileInfo>().MyIndex);
-                            }
-                        }
+                        _hoveredSprite.GetComponent<TileInfo>().Filled = true;
+                        SpawnTable(previosTileIndex);
                     }
                 }
-                
             }
-            
+
         }
     }
-    private bool IsNeighborEmpty(Vector2Int currentIndex)
+    private bool CheckIfThisTileAvailable(Vector2Int index)
     {
-        print("Rows : " + JsonReaderSo.Rows + "  Cols : " + JsonReaderSo.Cols);
-        print("currentIndex : " + currentIndex);
-        if(currentIndex.y + 1 < JsonReaderSo.Cols)
+        if (JsonReaderSo.Grid!= null)
         {
-            bool _ifNextTileIsFilled = JsonReaderSo.Grid[currentIndex.x, currentIndex.y + 1].GetComponent<TileInfo>().Filled;
-            int _nextTileISWoodType = JsonReaderSo.Grid[currentIndex.x, currentIndex.y + 1].GetComponent<TileInfo>().TileType;
-            if (!_ifNextTileIsFilled && _nextTileISWoodType == placementIndex)
+            if (JsonReaderSo.Grid[index.x,index.y].GetComponent<TileInfo>() != null)
             {
-                JsonReaderSo.Grid[currentIndex.x, currentIndex.y + 1].GetComponent<TileInfo>().Filled = true;
-                return true;
+                if(JsonReaderSo.Grid[index.x, index.y].GetComponent<TileInfo>().TileType == placementIndex)
+                {
+                    if (JsonReaderSo.Grid[index.x, index.y].GetComponent<TileInfo>().Filled == false)
+                    {
+                        return true;
+                    }
+                }
             }
         }
-        
+            return false;
+    }
+    private bool IsThisTileEmpty(Vector2Int currentIndex)
+    {
+        //print("Rows : " + JsonReaderSo.Rows + "  Cols : " + JsonReaderSo.Cols);
+        //print("currentIndex : " + currentIndex);
+        if(currentIndex.y < JsonReaderSo.Cols && currentIndex.y>=0)
+        {
+            return CheckIfThisTileAvailable(currentIndex);
+        }
+        print("Next Tile is not available!");
         return false;
     }
     private void SpawnTable(Vector2Int index)
