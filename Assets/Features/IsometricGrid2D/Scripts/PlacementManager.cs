@@ -95,11 +95,7 @@ public class PlacementManager : MonoBehaviour
     {
         if(Input.GetMouseButtonDown(0))
         {
-            if(!CheckIfThisTileAvailable(_hoveredSprite.GetComponent<TileInfo>().MyIndex))
-            {
-                print("This tile is not available!");
-            }
-            else
+            if(CheckIfThisTileAvailable(_hoveredSprite.GetComponent<TileInfo>().MyIndex))
             {
                 int x = _hoveredSprite.GetComponent<TileInfo>().MyIndex.x;
                 int y = _hoveredSprite.GetComponent<TileInfo>().MyIndex.y + 1;
@@ -109,7 +105,7 @@ public class PlacementManager : MonoBehaviour
                 {
                     //print("Next Tile is also avaialable : " + _hoveredSprite.GetComponent<TileInfo>().MyIndex);
                     _hoveredSprite.GetComponent<TileInfo>().Filled = true;
-                    JsonReaderSo.Grid[x,y-1].GetComponent<TileInfo>().Filled = true;
+                    JsonReaderSo.Grid[x, y - 1].GetComponent<TileInfo>().Filled = true;
                     SpawnTable(_hoveredSprite.GetComponent<TileInfo>().MyIndex);
                 }
                 else
@@ -121,12 +117,11 @@ public class PlacementManager : MonoBehaviour
                     if (IsThisTileEmpty(previosTileIndex))
                     {
                         _hoveredSprite.GetComponent<TileInfo>().Filled = true;
-                        JsonReaderSo.Grid[previosTileIndex.x, previosTileIndex.y].GetComponent<TileInfo>().Filled = true;   
+                        JsonReaderSo.Grid[previosTileIndex.x, previosTileIndex.y].GetComponent<TileInfo>().Filled = true;
                         SpawnTable(previosTileIndex);
                     }
                 }
             }
-
         }
     }
     private bool CheckIfThisTileAvailable(Vector2Int index)
@@ -144,6 +139,7 @@ public class PlacementManager : MonoBehaviour
                 }
             }
         }
+        print($"This tile {index} is not available!");
         return false;
     }
     private bool IsThisTileEmpty(Vector2Int currentIndex)
