@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TileHover : MonoBehaviour
+public class PlacementManager : MonoBehaviour
 {
+    [SerializeField] int placementIndex = 3;
     public LayerMask SpriteLayer; // Layer mask for the sprites
     public float HoverScaleFactor = 1.2f; // Scale factor for hover animation
     int _selectedSortingOrder = 1; // Sorting order for the selected tile
@@ -12,8 +13,10 @@ public class TileHover : MonoBehaviour
     SpriteRenderer _lastSpriteRenderer;
     private Transform _lastHoveredSprite;
     private int _defaultSortingOrder; // Default sorting order of the sprites
+    [SerializeField] Transform TablesHolder;
+    [SerializeField] private JsonReaderSo JsonReaderSo;
 
-    
+
     void Start()
     {
         // Get the default sorting order of the sprites
@@ -25,6 +28,11 @@ public class TileHover : MonoBehaviour
     }
 
     void Update()
+    {
+        HoverOverGrid();
+        CheckTablePlacement();
+    }
+    private void HoverOverGrid()
     {
         // Cast a ray from the mouse position to detect the sprites
         _hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero, SpriteLayer);
@@ -80,6 +88,30 @@ public class TileHover : MonoBehaviour
                 _lastHoveredSprite = null;
             }
         }
-
+    }
+    private void CheckTablePlacement()
+    {
+        if(Input.GetMouseButtonDown(0))
+        {
+            if(_hoveredSprite!=null)
+            {
+                if(_hoveredSprite.GetComponent<TileInfo>()!=null)
+                {
+                    if (_hoveredSprite.GetComponent<TileInfo>().TileType == placementIndex)  // if thats a wood tile
+                    {
+                        if(!_hoveredSprite.GetComponent<TileInfo>().filled) // if its not already filled
+                        {
+                            SpawnTable(_hoveredSprite.GetComponent<TileInfo>().myIndex);
+                        }
+                    }
+                }
+                
+            }
+            
+        }
+    }
+    private void SpawnTable(Vector2Int index)
+    {
+        GameObject table = Instantiate(Resources.Load("HorizontalTable"),JsonReaderSo.Grid[index.x, index.y]) as GameObject;
     }
 }

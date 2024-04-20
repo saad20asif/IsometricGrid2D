@@ -5,7 +5,7 @@ using UnityEngine;
 public class JsonReaderSo : JsonReaderBase<TerrainData>
 {
     public TerrainData TerrainData;
-    public List<List<Transform>> Grid;
+    public Transform[,] Grid;
     [SerializeField] private string FileName;
     public void LoadDataFromFile()
     {

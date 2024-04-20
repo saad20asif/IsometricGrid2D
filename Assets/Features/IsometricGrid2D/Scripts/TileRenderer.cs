@@ -19,12 +19,16 @@ public class TerrainData
 public class TileRenderer : MonoBehaviour
 {
     [SerializeField] private JsonReaderSo JsonReaderSo;
-    private Transform[,] grid;
 
     public float xOffset = 1.0f;
     public float yOffset = 1.0f;
 
     private int _tileType = 0;
+
+    private void Start()
+    {
+        LoadIt();
+    }
 
     [Button("LOAD FROM JSON")]
     private void LoadIt()
@@ -51,7 +55,7 @@ public class TileRenderer : MonoBehaviour
         {
             int rows = JsonReaderSo.TerrainData.TerrainGrid.Count;
             int cols = rows > 0 ? JsonReaderSo.TerrainData.TerrainGrid[0].Count : 0;
-            grid = new Transform[rows, cols];
+            JsonReaderSo.Grid = new Transform[rows, cols];
         }
     }
 
@@ -107,8 +111,8 @@ public class TileRenderer : MonoBehaviour
                         }
 
                         // Store the tile object in the grid array
-                        grid[i, j] = tileObject.transform;
-                        print(grid[i, j].name);
+                        JsonReaderSo.Grid[j, i] = tileObject.transform;
+                        //print(JsonReaderSo.Grid[i, j].name);
 
                     }
                 }
