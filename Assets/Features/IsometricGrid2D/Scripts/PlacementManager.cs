@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlacementManager : MonoBehaviour
@@ -99,9 +101,13 @@ public class PlacementManager : MonoBehaviour
                 {
                     if (_hoveredSprite.GetComponent<TileInfo>().TileType == placementIndex)  // if thats a wood tile
                     {
-                        if(!_hoveredSprite.GetComponent<TileInfo>().filled) // if its not already filled
+                        if(!_hoveredSprite.GetComponent<TileInfo>().Filled) // if its not already filled
                         {
-                            SpawnTable(_hoveredSprite.GetComponent<TileInfo>().myIndex);
+                            if(IsNeighborEmpty(_hoveredSprite.GetComponent<TileInfo>().MyIndex)) // If in the table direction neighbor is also empty
+                            {
+                                _hoveredSprite.GetComponent<TileInfo>().Filled = true;
+                                SpawnTable(_hoveredSprite.GetComponent<TileInfo>().MyIndex);
+                            }
                         }
                     }
                 }
@@ -109,6 +115,23 @@ public class PlacementManager : MonoBehaviour
             }
             
         }
+    }
+    private bool IsNeighborEmpty(Vector2Int currentIndex)
+    {
+        print("Rows : " + JsonReaderSo.Rows + "  Cols : " + JsonReaderSo.Cols);
+        print("currentIndex : " + currentIndex);
+        if(currentIndex.y + 1 < JsonReaderSo.Cols)
+        {
+            bool _ifNextTileIsFilled = JsonReaderSo.Grid[currentIndex.x, currentIndex.y + 1].GetComponent<TileInfo>().Filled;
+            int _nextTileISWoodType = JsonReaderSo.Grid[currentIndex.x, currentIndex.y + 1].GetComponent<TileInfo>().TileType;
+            if (!_ifNextTileIsFilled && _nextTileISWoodType == placementIndex)
+            {
+                JsonReaderSo.Grid[currentIndex.x, currentIndex.y + 1].GetComponent<TileInfo>().Filled = true;
+                return true;
+            }
+        }
+        
+        return false;
     }
     private void SpawnTable(Vector2Int index)
     {

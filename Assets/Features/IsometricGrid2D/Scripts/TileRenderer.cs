@@ -107,7 +107,7 @@ public class TileRenderer : MonoBehaviour
                         if (tileObject.GetComponent<TileInfo>() != null)
                         {
                             tileObject.GetComponent<TileInfo>().TileType = _tileType;
-                            tileObject.GetComponent<TileInfo>().myIndex = new Vector2Int(j, i);
+                            tileObject.GetComponent<TileInfo>().MyIndex = new Vector2Int(j, i);
                         }
 
                         // Store the tile object in the grid array
