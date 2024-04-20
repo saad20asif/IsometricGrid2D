@@ -104,22 +104,24 @@ public class PlacementManager : MonoBehaviour
                 int x = _hoveredSprite.GetComponent<TileInfo>().MyIndex.x;
                 int y = _hoveredSprite.GetComponent<TileInfo>().MyIndex.y + 1;
                 Vector2Int nextTileIndex = new Vector2Int(x, y);
-                print("nextTileIndex : " + nextTileIndex);
-                if (IsThisTileEmpty(nextTileIndex)) // If next tile is available
+
+                if (IsThisTileEmpty(nextTileIndex)) // Check If next tile is available
                 {
-                    print("Next Tile is also avaialable : " + _hoveredSprite.GetComponent<TileInfo>().MyIndex);
+                    //print("Next Tile is also avaialable : " + _hoveredSprite.GetComponent<TileInfo>().MyIndex);
                     _hoveredSprite.GetComponent<TileInfo>().Filled = true;
+                    JsonReaderSo.Grid[x,y-1].GetComponent<TileInfo>().Filled = true;
                     SpawnTable(_hoveredSprite.GetComponent<TileInfo>().MyIndex);
                 }
                 else
                 {
-                    // if next tile is not available we can also check previous tile
+                    // Now check if previous tile available
                     x = _hoveredSprite.GetComponent<TileInfo>().MyIndex.x;
                     y = _hoveredSprite.GetComponent<TileInfo>().MyIndex.y - 1;
                     Vector2Int previosTileIndex = new Vector2Int(x, y);
                     if (IsThisTileEmpty(previosTileIndex))
                     {
                         _hoveredSprite.GetComponent<TileInfo>().Filled = true;
+                        JsonReaderSo.Grid[previosTileIndex.x, previosTileIndex.y].GetComponent<TileInfo>().Filled = true;   
                         SpawnTable(previosTileIndex);
                     }
                 }
@@ -142,7 +144,7 @@ public class PlacementManager : MonoBehaviour
                 }
             }
         }
-            return false;
+        return false;
     }
     private bool IsThisTileEmpty(Vector2Int currentIndex)
     {
