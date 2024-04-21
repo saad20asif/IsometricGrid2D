@@ -105,7 +105,7 @@ public class PlacementManager : MonoBehaviour
                 {
                     //print("Next Tile is also avaialable : " + _hoveredSprite.GetComponent<TileInfo>().MyIndex);
                     _hoveredSprite.GetComponent<TileInfo>().Filled = true;
-                    JsonReaderSo.Grid[x, y - 1].GetComponent<TileInfo>().Filled = true;
+                    JsonReaderSo.Grid[x, y].GetComponent<TileInfo>().Filled = true;
                     SpawnTable(_hoveredSprite.GetComponent<TileInfo>().MyIndex);
                 }
                 else
