@@ -19,6 +19,7 @@ public class PlacementManager : MonoBehaviour
     private int _defaultSortingOrder; // Default sorting order of the sprites
     [SerializeField] Transform TablesHolder;
     [SerializeField] private JsonReaderSo JsonReaderSo;
+    [SerializeField] Transform shadowTable;
 
     public TableOrientation CurrentOrientation = TableOrientation.Horizontal;
     void Start()
@@ -43,7 +44,7 @@ public class PlacementManager : MonoBehaviour
         if (_hit.collider != null)
         {
             Transform newHoveredSprite = _hit.transform;
-
+            SetShadowTable(newHoveredSprite);
             if (newHoveredSprite != _lastHoveredSprite)
             {
                 ResetLastHoveredSprite();
@@ -55,6 +56,12 @@ public class PlacementManager : MonoBehaviour
         {
             ResetLastHoveredSprite();
         }
+    }
+    private void SetShadowTable(Transform newHoveredSprite)
+    {
+        shadowTable.transform.SetParent(newHoveredSprite);
+        shadowTable.gameObject.SetActive(true);
+        ResetTransform(shadowTable);
     }
 
     private void ResetLastHoveredSprite()
@@ -190,6 +197,12 @@ public class PlacementManager : MonoBehaviour
     {
         string _prefabName = (orientation == TableOrientation.Horizontal) ? "HorizontalTable" : "VericalTable";
         GameObject table = Instantiate(Resources.Load(_prefabName), JsonReaderSo.Grid[index.x, index.y]) as GameObject;
+    }
+    private void ResetTransform(Transform objectToReset)
+    {
+        shadowTable.transform.localPosition = Vector3.zero;
+        shadowTable.localScale = Vector3.one;
+        shadowTable.localEulerAngles = Vector3.zero;
     }
 
 }
