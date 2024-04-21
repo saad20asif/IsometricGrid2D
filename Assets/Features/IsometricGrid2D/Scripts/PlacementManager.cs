@@ -3,25 +3,33 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public enum TableOrientation
-{
-    Horizontal,
-    Vertical
-}
 public class PlacementManager : MonoBehaviour
 {
     [SerializeField] int _placementIndex = 3;
     public LayerMask LayerToRaycast; // Layer mask for the sprites
-    public float HoverScaleFactor = 1.2f; // Scale factor for hover animation
+    //public float HoverScaleFactor = 1.2f; // Scale factor for hover animation
     RaycastHit2D _hit;
     Transform _hoveredSprite;
     Transform _lastHoveredSprite;
     private int _defaultSortingOrder; // Default sorting order of the sprites
     [SerializeField] Transform TablesHolder;
     [SerializeField] private JsonReaderSo JsonReaderSo;
-    [SerializeField] Transform shadowTable;
+    [SerializeField] Transform ShadowHorizontalTable;
+    [SerializeField] Transform ShadowVerticalTable;
+    Transform _selectedShadow;
+    [SerializeField] OrientationSo OrientationSo;
+    //public TableOrientation CurrentOrientation = TableOrientation.Horizontal;
 
-    public TableOrientation CurrentOrientation = TableOrientation.Horizontal;
+
+    private void OnEnable()
+    {
+        MouseScrollWheel.OrientationFlipped += SelectCurrentShadow;
+    }
+    private void OnDisable()
+    {
+        MouseScrollWheel.OrientationFlipped -= SelectCurrentShadow;
+    }
+  
     void Start()
     {
         // Get the default sorting order of the sprites
@@ -30,6 +38,17 @@ public class PlacementManager : MonoBehaviour
         {
             _defaultSortingOrder = spriteRenderer.sortingOrder;
         }
+        SelectCurrentShadow();
+    }
+    void SelectCurrentShadow()
+    {
+        ShadowVerticalTable.gameObject.SetActive(false);
+        ShadowHorizontalTable.gameObject.SetActive(false);
+
+        if (OrientationSo.CurrentOrientation == Orientation.Vertical)
+            _selectedShadow = ShadowVerticalTable;
+        else
+            _selectedShadow = ShadowHorizontalTable;
     }
 
     void Update()
@@ -37,6 +56,7 @@ public class PlacementManager : MonoBehaviour
         SelectTile();
         CheckTablePlacement();
     }
+
     private void SelectTile()
     {
         _hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero, LayerToRaycast);
@@ -59,16 +79,17 @@ public class PlacementManager : MonoBehaviour
     }
     private void SetShadowTable(Transform newHoveredSprite)
     {
-        shadowTable.transform.SetParent(newHoveredSprite);
-        shadowTable.gameObject.SetActive(true);
-        ResetTransform(shadowTable);
+        _selectedShadow.transform.SetParent(newHoveredSprite);
+        _selectedShadow.gameObject.SetActive(true);
+        ResetTransform(_selectedShadow);
+        _selectedShadow.transform.SetParent(TablesHolder);
     }
 
     private void ResetLastHoveredSprite()
     {
         if (_lastHoveredSprite != null)
         {
-            _lastHoveredSprite.localScale = Vector3.one;
+            //_lastHoveredSprite.localScale = Vector3.one;
             var lastSpriteRenderer = _lastHoveredSprite.GetComponent<SpriteRenderer>();
             if (lastSpriteRenderer != null)
             {
@@ -79,13 +100,14 @@ public class PlacementManager : MonoBehaviour
                 Debug.LogWarning("SpriteRenderer component not found on: " + _lastHoveredSprite.name);
             }
             _lastHoveredSprite = null;
+            _selectedShadow.gameObject.SetActive(false);
         }
     }
 
     private void SetHoveredSprite(Transform newHoveredSprite)
     {
         _hoveredSprite = newHoveredSprite;
-        _hoveredSprite.localScale = Vector3.one * HoverScaleFactor;
+        //_hoveredSprite.localScale = Vector3.one * HoverScaleFactor;
         var hoveredSpriteRenderer = _hoveredSprite.GetComponent<SpriteRenderer>();
         if (hoveredSpriteRenderer != null)
         {
@@ -100,11 +122,11 @@ public class PlacementManager : MonoBehaviour
             Vector2Int _selectedTileIndex = _hoveredSprite.GetComponent<TileInfo>().MyIndex;
             if (CheckIfThisTileAvailable(_selectedTileIndex))
             {
-                if (CurrentOrientation == TableOrientation.Horizontal)
+                if (OrientationSo.CurrentOrientation == Orientation.Horizontal)
                 {
                     HorizontalPlacing(_selectedTileIndex);
                 }
-                else if (CurrentOrientation == TableOrientation.Vertical)
+                else if (OrientationSo.CurrentOrientation == Orientation.Vertical)
                 {
                     VerticalPlacing(_selectedTileIndex);
                 }
@@ -121,7 +143,7 @@ public class PlacementManager : MonoBehaviour
         {
             //print("Next Tile is also avaialable : " + _hoveredSprite.GetComponent<TileInfo>().MyIndex);
             MarkTilesAsFilled(_x, _y);
-            SpawnTable(selectedTileIndex, CurrentOrientation);
+            SpawnTable(selectedTileIndex, OrientationSo.CurrentOrientation);
         }
         else
         {
@@ -132,7 +154,7 @@ public class PlacementManager : MonoBehaviour
             if (IsThisTileEmpty(_previosTileIndex))
             {
                 MarkTilesAsFilled(_previosTileIndex.x, _previosTileIndex.y);
-                SpawnTable(_previosTileIndex, CurrentOrientation);
+                SpawnTable(_previosTileIndex, OrientationSo.CurrentOrientation);
             }
         }
     }
@@ -145,7 +167,7 @@ public class PlacementManager : MonoBehaviour
         if (IsThisTileEmpty(_nextTileIndex)) // Check if the next tile is available
         {
             MarkTilesAsFilled(_x, _y);
-            SpawnTable(selectedTileIndex, TableOrientation.Vertical);
+            SpawnTable(selectedTileIndex, Orientation.Vertical);
         }
         else
         {
@@ -155,7 +177,7 @@ public class PlacementManager : MonoBehaviour
             if (IsThisTileEmpty(_previousTileIndex))
             {
                 MarkTilesAsFilled(_previousTileIndex.x, _previousTileIndex.y);
-                SpawnTable(_previousTileIndex, TableOrientation.Vertical);
+                SpawnTable(_previousTileIndex, Orientation.Vertical);
             }
         }
     }
@@ -193,16 +215,16 @@ public class PlacementManager : MonoBehaviour
         print("Next Tile is not available!");
         return false;
     }
-    private void SpawnTable(Vector2Int index, TableOrientation orientation)
+    private void SpawnTable(Vector2Int index, Orientation orientation)
     {
-        string _prefabName = (orientation == TableOrientation.Horizontal) ? "HorizontalTable" : "VericalTable";
+        string _prefabName = (orientation == Orientation.Horizontal) ? "HorizontalTable" : "VericalTable";
         GameObject table = Instantiate(Resources.Load(_prefabName), JsonReaderSo.Grid[index.x, index.y]) as GameObject;
     }
     private void ResetTransform(Transform objectToReset)
     {
-        shadowTable.transform.localPosition = Vector3.zero;
-        shadowTable.localScale = Vector3.one;
-        shadowTable.localEulerAngles = Vector3.zero;
+        objectToReset.transform.localPosition = Vector3.zero;
+        objectToReset.localScale = Vector3.one;
+        objectToReset.localEulerAngles = Vector3.zero;
     }
 
 }
